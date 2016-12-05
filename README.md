@@ -2,11 +2,9 @@
 
 a terraform module to provide a simple single-tier architecure on aws.
 
-![graph.png](./graph.png)
-
 ## Requirement
 
-- Terraform >= 0.7.7
+- Terraform >= 0.8.4
 
 ## Usage
 
@@ -14,30 +12,27 @@ a terraform module to provide a simple single-tier architecure on aws.
 module "single_tier" {
   source = "git@github.com:accaman/tf_aws_single_tier"
 
-  name_prefix = "env-project"
-
-  region    = "us-west2"
-  vpc       = "10.0.0.0/16"
-  multi_az  = 2
-  azs       = ["us-west-2a", "us-west-2b"]
-  subnets   = ["10.0.64.0/26", "10.0.64.64/26"]
-
-  public_key = "/path/to/ec2.pub"
-  key_name   = "ec2_user"
-
-  bastion_images = {
+  prefix       = "env-project"
+  region       = "us-west2"
+  vpc          = "10.0.0.0/16"
+  az_count     = 2
+  azs          = ["us-west-2a", "us-west-2b"]
+  subnets      = ["10.0.64.0/26", "10.0.64.64/26"]
+  public_key   = "/path/to/ec2.pub"
+  key_name     = "ec2_user"
+  bastion_amis = {
     us-west-2        = "ami-81f62ce1"
-    # ap-northeast-1 = "ami-i14r1u2i"
+    ap-northeast-1   = "ami-i14r1u2i"
   }
-  bastion_flavor = "t2.micro"
-  accepts_ssh_connection_for = ["203.0.113.0/24"]
+  bastion_instance_type = "t2.micro"
+  bastion_sg_whitelist  = ["203.0.113.0/24"]
 }
 ```
 
 ## Install
 
 ```sh
-sudo sh -c "curl -sSL https://releases.hashicorp.com/terraform/0.7.7/terraform_0.7.7_darwin_amd64.zip | bsdtar -xf - -C /usr/local/bin"
+sudo sh -c "curl -sSL https://releases.hashicorp.com/terraform/0.8.4/terraform_0.8.4_darwin_amd64.zip | bsdtar -xf - -C /usr/local/bin"
 sudo chmod +x /usr/local/bin/terraform
 cd /path/to/repo
 terraform get

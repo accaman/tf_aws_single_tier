@@ -1,18 +1,26 @@
-variable "name_prefix" { }
-variable "vpc_id"      { }
-variable "multi_az"    { }
-variable "azs"         { type = "list" }
-variable "cidrs"       { type = "list" }
+variable "prefix" {}
+
+variable "vpc_id" {}
+
+variable "az_count" {}
+
+variable "azs" {
+  type = "list"
+}
+
+variable "cidrs" {
+  type = "list"
+}
 
 resource "aws_subnet" "ext" {
-  count                   = "${var.multi_az}"
+  count                   = "${var.az_count}"
   vpc_id                  = "${var.vpc_id}"
-  availability_zone       = "${element(var.azs, count.index % var.multi_az)}"
+  availability_zone       = "${element(var.azs, count.index % var.az_count)}"
   cidr_block              = "${element(var.cidrs, count.index)}"
   map_public_ip_on_launch = true
 
   tags {
-    Name = "${var.name_prefix}-ext-subnet-${element(var.azs, count.index % var.multi_az)}"
+    Name = "${format("%s-external-subnet%02d", var.prefix, count.index + 1)}"
   }
 }
 
@@ -20,7 +28,7 @@ resource "aws_internet_gateway" "default" {
   vpc_id = "${var.vpc_id}"
 
   tags {
-    Name = "${var.name_prefix}-igw"
+    Name = "${var.prefix}-igw"
   }
 }
 
@@ -28,7 +36,7 @@ resource "aws_route_table" "ext" {
   vpc_id = "${var.vpc_id}"
 
   tags {
-    Name = "${var.name_prefix}-ext-tbl"
+    Name = "${var.prefix}-external-tbl"
   }
 }
 
@@ -39,7 +47,7 @@ resource "aws_route" "ext_r" {
 }
 
 resource "aws_route_table_association" "ext_a" {
-  count          = "${var.multi_az}"
+  count          = "${var.az_count}"
   subnet_id      = "${element(aws_subnet.ext.*.id, count.index)}"
   route_table_id = "${aws_route_table.ext.id}"
 }
